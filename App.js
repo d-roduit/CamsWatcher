@@ -1,4 +1,4 @@
-import { StatusBar } from 'react-native';
+import { StatusBar, LogBox } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './components/HomeScreen';
@@ -9,6 +9,13 @@ import { Ionicons } from 'react-native-vector-icons';
 const Tab = createBottomTabNavigator();
 
 <Ionicons name="location" size={24} color="black" />
+
+// Temporary fix to suppress PropType warnings which are due
+// to dependencies wich use these old props.
+// The warnings will eventually disappear when the dependencies packages update their code.
+LogBox.ignoreLogs([
+    "exported from 'deprecated-react-native-prop-types'.",
+]);
 
 function App() {
 
