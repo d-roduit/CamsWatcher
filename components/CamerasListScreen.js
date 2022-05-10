@@ -4,7 +4,7 @@ import { ListItem, Avatar, Divider } from '@rneui/themed';
 import { API_BASE_URL, API_KEY } from '@env';
 
 const fetchCamerasRequestOptions = {
-    limit: 50,
+    limit: 25,
     offset: 0
 };
 
@@ -23,11 +23,15 @@ function CamerasListScreen() {
                 setNbTotalCameras(data.result.total);
                 setCameras([
                     ...cameras,
-                    ...data.result.webcams.map(webcam => {
+                    ...data.result.webcams.flatMap(webcam => {
+                        for (let camera in cameras) {
+                            if (webcam.id === camera.id) return [];
+                        }
+
                         if (webcam.title.length > webcam.location.city.length) {
                             webcam.title = webcam.title.substring(webcam.location.city.length + 2).trim();
                         }
-                        return webcam;
+                        return [webcam];
                     })
                 ]);
                 setLoading(false);
