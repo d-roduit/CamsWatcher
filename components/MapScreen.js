@@ -166,7 +166,7 @@ const mapStyle = [
     }
 ];
 
-function MapScreen() {
+function MapScreen({ navigation }) {
 
     const [loadingUserLocation, setLoadingUserLocation] = useState(false);
     const [initialRegion, setInitialRegion] = useState({
@@ -263,7 +263,7 @@ function MapScreen() {
                             return;
                         }
 
-                        Alert.alert('callout pressed');
+                        navigation.navigate("Camera", { camera });
                     }}
                     style={styles.customView}
                 >
@@ -271,7 +271,7 @@ function MapScreen() {
                         <View style={styles.bubble}>
                             <View style={styles.amount}>
                                 <Text style={styles.calloutText}>{camera.title}</Text>
-                                <Button onPress={() => { Alert.alert("button pressed") }} title="Open"></Button>
+                                <Button onPress={() => navigation.navigate("Camera", { camera })} title="Open" />
                             </View>
                         </View>
                         <View style={styles.arrowBorder} />

@@ -8,7 +8,7 @@ const fetchCamerasParams = {
     offset: 0
 };
 
-function CamerasListScreen() {
+function CamerasListScreen({ navigation }) {
 
     const [loading, setLoading] = useState(false);
     const [nbTotalCameras, setNbTotalCameras] = useState(-1);
@@ -44,7 +44,10 @@ function CamerasListScreen() {
 
     const renderListItemComponent = ({ item }) => {
         return (
-            <ListItem containerStyle={styles.listItem}>
+            <ListItem
+                containerStyle={styles.listItem}
+                onPress={() => navigation.navigate("Camera", { camera: item })}
+            >
                 <Avatar
                     icon={{ name: "camera", type: "ionicon", color: "gray" }}
                     size={item.image.sizes.icon.width}

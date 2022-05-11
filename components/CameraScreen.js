@@ -1,9 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-function CameraScreen() {
+function CameraScreen({ route, navigation }) {
+
+    const { camera } = route.params;
+
     return (
         <View style={styles.container}>
-            <Text>CameraScreen</Text>
+            <Text>{camera.title}</Text>
         </View>
     );
 }
