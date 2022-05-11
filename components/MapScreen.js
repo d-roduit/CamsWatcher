@@ -224,7 +224,7 @@ function MapScreen() {
                 setInitialRegion(userRegion);
             }
         } catch (err) {
-            console.err(err);
+            console.error(err);
         }
 
         return areaToDisplay;
@@ -233,8 +233,8 @@ function MapScreen() {
     const fetchCamerasInArea = ({ topRight, bottomLeft, zoom }) => {
         const getCamerasAPIEndpoint = `${API_BASE_URL}/map/${topRight.latitude},${topRight.longitude},${bottomLeft.latitude},${bottomLeft.longitude},${zoom}?show=webcams:image,location`;
         fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY } })
-            .then(response => response.json())
-            .then(data => setCameras(data.result.webcams))
+            .then(response => (response.ok) ? response.json() : null)
+            .then(data => (data !== null) ? setCameras(data?.result?.webcams || []) : null)
             .catch(err => console.error(err));
     }
 
