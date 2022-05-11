@@ -242,6 +242,46 @@ function MapScreen() {
         fetchCamerasInArea(getCoordinatesForAPIFromLocation(region))
     };
 
+    const renderCameraMarker = (camera, index) => {
+        return (
+            <Marker
+                key={index}
+                coordinate={{
+                    latitude: camera.location.latitude,
+                    longitude: camera.location.longitude
+                }}
+                image={{ uri: camera.image.current.icon }}
+            >
+                <Callout
+                    tooltip
+                    onPress={mapEvent => {
+                        if (
+                            Platform.OS === 'ios' ||
+                            mapEvent.nativeEvent.action === 'marker-inside-overlay-press' ||
+                            mapEvent.nativeEvent.action === 'callout-inside-press'
+                        ) {
+                            return;
+                        }
+
+                        Alert.alert('callout pressed');
+                    }}
+                    style={styles.customView}
+                >
+                    <View style={styles.calloutContainer}>
+                        <View style={styles.bubble}>
+                            <View style={styles.amount}>
+                                <Text style={styles.calloutText}>{camera.title}</Text>
+                                <Button onPress={() => { Alert.alert("button pressed") }} title="Open"></Button>
+                            </View>
+                        </View>
+                        <View style={styles.arrowBorder} />
+                        <View style={styles.arrow} />
+                    </View>
+                </Callout>
+            </Marker>
+        )
+    }
+
     useEffect(() => {
         (async () => {
             const baseArea = await determineInitialAreaToDisplay();
@@ -266,45 +306,7 @@ function MapScreen() {
                 onTouchMove={() => setInitialRegion(null)}
                 onRegionChangeComplete={handleOnRegionChangeComplete}
             >
-                {
-                    cameras.map((camera, index) => (
-                        <Marker
-                            key={index}
-                            coordinate={{
-                                latitude: camera.location.latitude,
-                                longitude: camera.location.longitude
-                            }}
-                            image={{ uri: camera.image.current.icon }}
-                        >
-                            <Callout
-                                tooltip
-                                onPress={e => {
-                                    if (
-                                        Platform.OS === 'ios' ||
-                                        e.nativeEvent.action === 'marker-inside-overlay-press' ||
-                                        e.nativeEvent.action === 'callout-inside-press'
-                                    ) {
-                                        return;
-                                    }
-
-                                    Alert.alert('callout pressed');
-                                }}
-                                style={styles.customView}
-                            >
-                                <View style={styles.calloutContainer}>
-                                    <View style={styles.bubble}>
-                                        <View style={styles.amount}>
-                                            <Text style={styles.calloutText}>{camera.title}</Text>
-                                                <Button onPress={() => { Alert.alert("button pressed")}} title="Open"></Button>
-                                        </View>
-                                    </View>
-                                    <View style={styles.arrowBorder} />
-                                    <View style={styles.arrow} />
-                                </View>
-                            </Callout>
-                        </Marker>
-                    ))
-                }
+                {cameras.map(renderCameraMarker)}
             </MapView>
 
             <Modal
@@ -328,16 +330,16 @@ function MapScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "black"
+        backgroundColor: "black",
     },
     mapview: {
-        flex: 1
+        flex: 1,
     },
     centeredView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
+        marginTop: 22,
     },
     modalView: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
@@ -347,20 +349,20 @@ const styles = StyleSheet.create({
         shadowColor: "black",
         shadowOffset: {
             width: 0,
-            height: 2
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
     },
     modalText: {
-        color: "white"
+        color: "white",
     },
     calloutContainer: {
         flexDirection: 'column',
         alignSelf: 'flex-start',
     },
     calloutText: {
-        textAlign: "center"
+        textAlign: "center",
     },
     bubble: {
         width: 140,
