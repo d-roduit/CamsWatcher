@@ -3,7 +3,7 @@ import { StyleSheet, View, FlatList, ActivityIndicator } from 'react-native';
 import { ListItem, Avatar, Divider } from '@rneui/themed';
 import { API_BASE_URL, API_KEY } from '@env';
 
-const fetchCamerasRequestOptions = {
+const fetchCamerasParams = {
     limit: 25,
     offset: 0
 };
@@ -16,22 +16,18 @@ function CamerasListScreen() {
 
     const fetchCameras = () => {
         setLoading(true);
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/orderby=random/limit=${fetchCamerasRequestOptions.limit},${fetchCamerasRequestOptions.offset}?show=webcams:image,location`;
+        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/orderby=random/limit=${fetchCamerasParams.limit},${fetchCamerasParams.offset}?show=webcams:image,location`;
         fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY } })
             .then(response => response.json())
             .then(data => {
                 setNbTotalCameras(data.result.total);
-                setCameras([
-                    ...cameras,
-                    ...data.result.webcams.flatMap(webcam => {
-                        for (let camera in cameras) {
-                            if (webcam.id === camera.id) return [];
-                        }
-
+                setCameras(previousState => [
+                    ...previousState,
+                    ...data.result.webcams.map(webcam => {
                         if (webcam.title.length > webcam.location.city.length) {
                             webcam.title = webcam.title.substring(webcam.location.city.length + 2).trim();
                         }
-                        return [webcam];
+                        return webcam;
                     })
                 ]);
                 setLoading(false);
@@ -40,26 +36,44 @@ function CamerasListScreen() {
     }
 
     const handleOnEndReached = () => {
-        const newOffset = fetchCamerasRequestOptions.offset + fetchCamerasRequestOptions.limit;
-
-        if (newOffset > nbTotalCameras - fetchCamerasRequestOptions.limit) return;
-
-        fetchCamerasRequestOptions.offset = newOffset;
-
+        const newOffset = fetchCamerasParams.offset + fetchCamerasParams.limit;
+        if (newOffset > nbTotalCameras - fetchCamerasParams.limit) return;
+        fetchCamerasParams.offset = newOffset;
         fetchCameras();
     }
 
-    const renderFooter = () => {
+    const renderListItemComponent = ({ item }) => {
+        return (
+            <ListItem containerStyle={styles.listItem}>
+                <Avatar
+                    icon={{ name: "camera", type: "ionicon", color: "gray" }}
+                    size={item.image.sizes.icon.width}
+                    source={{ uri: item.image.current.icon }}
+                    avatarStyle={styles.avatar}
+                />
+
+                <ListItem.Content>
+                    <ListItem.Title style={styles.title}>
+                        {item.title}
+                    </ListItem.Title>
+
+                    <ListItem.Subtitle style={styles.subtitle}>
+                        {`${item.location.city} - ${item.location.country}`}
+                    </ListItem.Subtitle>
+                </ListItem.Content>
+
+                <ListItem.Chevron />
+            </ListItem>
+        );
+    }
+
+    const renderItemSeparatorComponent = () => <Divider inset color={"dimgray"} />
+
+    const renderFooterComponent = () => {
         if (!loading) return null;
 
         return (
-            <View
-                style={{
-                    paddingVertical: 20,
-                    borderTopWidth: 1,
-                    borderColor: "#CED0CE"
-                }}
-            >
+            <View style={styles.footerContainer}>
                 <ActivityIndicator animating size="large" />
             </View>
         );
@@ -70,34 +84,15 @@ function CamerasListScreen() {
     return (
         <View style={styles.container}>
             <FlatList
-                ItemSeparatorComponent={() => <Divider inset color={"dimgray"} />}
-                indicatorStyle={"white"}
                 data={cameras}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <ListItem
-                        containerStyle={{backgroundColor: "black"}}
-                    >
-                        <Avatar
-                            icon={{ name: "camera", type: "ionicon", color: "gray" }}
-                            size={item.image.sizes.icon.width}
-                            source={{ uri: item.image.current.icon }}
-                            avatarStyle={{ borderRadius: 2 }}
-                        />
-                        <ListItem.Content>
-                            <ListItem.Title style={{ color: 'white' }}>
-                                {item.title}
-                            </ListItem.Title>
-                            <ListItem.Subtitle style={{ color: 'gray' }}>
-                                {`${item.location.city} - ${item.location.country}`}
-                            </ListItem.Subtitle>
-                        </ListItem.Content>
-                        <ListItem.Chevron />
-                    </ListItem>
-                )}
-                ListFooterComponent={renderFooter}
+                keyExtractor={(item, index) => index}
+                renderItem={renderListItemComponent}
+                initialNumToRender={fetchCamerasParams.limit}
+                ItemSeparatorComponent={renderItemSeparatorComponent}
+                indicatorStyle={"white"}
+                ListFooterComponent={renderFooterComponent}
                 onEndReached={handleOnEndReached}
-                onEndReachedThreshold={20}
+                onEndReachedThreshold={0.5}
             />
         </View>
     );
@@ -106,8 +101,23 @@ function CamerasListScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "black"
-    }
+        backgroundColor: "black",
+    },
+    listItem: {
+        backgroundColor: "black",
+    },
+    title: {
+        color: "white",
+    },
+    subtitle: {
+        color: "gray",
+    },
+    avatar: {
+        borderRadius: 2,
+    },
+    footerContainer: {
+        paddingVertical: 20,
+    },
 });
 
 export default CamerasListScreen;
