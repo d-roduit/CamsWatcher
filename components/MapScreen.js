@@ -231,7 +231,7 @@ function MapScreen({ navigation }) {
     }
 
     const fetchCamerasInArea = ({ topRight, bottomLeft, zoom }) => {
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/map/${topRight.latitude},${topRight.longitude},${bottomLeft.latitude},${bottomLeft.longitude},${zoom}?show=webcams:image,location,player`;
+        const getCamerasAPIEndpoint = `${API_BASE_URL}/map/${topRight.latitude},${topRight.longitude},${bottomLeft.latitude},${bottomLeft.longitude},${zoom}?show=webcams:image,location,player,statistics`;
         fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY } })
             .then(response => (response.ok) ? response.json() : null)
             .then(data => (data !== null) ? setCameras(data?.result?.webcams || []) : null)

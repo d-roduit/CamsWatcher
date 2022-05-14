@@ -16,7 +16,7 @@ function CamerasListScreen({ navigation }) {
 
     const fetchCameras = () => {
         setLoading(true);
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/orderby=random/limit=${fetchCamerasParams.limit},${fetchCamerasParams.offset}?show=webcams:image,location,player`;
+        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/orderby=random/limit=${fetchCamerasParams.limit},${fetchCamerasParams.offset}?show=webcams:image,location,player,statistics`;
         fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY } })
             .then(response => response.json())
             .then(data => {
