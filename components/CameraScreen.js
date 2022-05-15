@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, ScrollView, Platform, Share } from 'react-native';
 import { Button } from '@rneui/themed';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,8 +7,41 @@ import { Ionicons } from '@expo/vector-icons';
 function CameraScreen({ route }) {
 
     const { camera } = route.params;
+    const informationsToDisplay = [
+        {
+            category: "location",
+            field: "city",
+            displayName: "City",
+        },
+        {
+            category: "location",
+            field: "region",
+            displayName: "Region",
+        },
+        {
+            category: "location",
+            field: "country",
+            displayName: "Country",
+        },
+        {
+            category: "location",
+            field: "continent",
+            displayName: "Continent",
+        },
+        {
+            category: "location",
+            field: "timezone",
+            displayName: "Timezone",
+        },
+        {
+            category: "statistics",
+            field: "views",
+            displayName: "Views",
+        },
+    ];
     const availableStreams = [];
 
+    // Fill availableStreams
     for (const streamType in camera?.player) {
         if (camera?.player?.[streamType]?.available) {
             availableStreams.push({
@@ -19,6 +52,7 @@ function CameraScreen({ route }) {
         }
     }
 
+
     const [loading, setLoading] = useState(true);
     const [loadingError, setLoadingError] = useState(false);
     const [selectedStream, setSelectedStream] = useState(availableStreams[0] || {});
@@ -28,18 +62,40 @@ function CameraScreen({ route }) {
         setLoading(false);
     }
 
+    const share = () => {
+        const content = {
+            message:
+                Platform.OS === "ios"
+                    ? `Windy webcam - ${camera.title}`
+                    : `Windy webcam - ${camera.title}\n${selectedStream.windyURL}`,
+            url: selectedStream.windyURL,
+            title: `Windy webcam - ${camera.title}`,
+        };
+
+        const options = {
+            subject: `Windy webcam - ${camera.title}`,
+        };
+
+        Share.share(content, options)
+            .catch(err => console.error(err));
+    }
+
     return (
-        <View style={styles.container}>
-            { loading && !loadingError && <ActivityIndicator style={{marginVertical: 30}} />}
-            { !loading && loadingError && (
+        <ScrollView
+            style={styles.container}
+            indicatorStyle={"white"}
+            nestedScrollEnabled={true}
+        >
+            {loading && !loadingError && <ActivityIndicator style={{ marginVertical: 30 }} />}
+            {!loading && loadingError && (
                 <View style={styles.errorContainer}>
                     <Ionicons name="alert-circle-outline" size={24} color="white" />
                     <Text style={[styles.whiteColor, { marginLeft: 10 }]}>Camera could not be loaded</Text>
                 </View>
             )}
-            { !loadingError && (
+            {!loadingError && (
                 <View style={{ display: (!loading && !loadingError) ? "flex" : "none" }}>
-                    <Text style={styles.cameraTitle}>{camera.title}</Text>
+                    <Text style={[styles.whiteColor, styles.cameraTitle]}>{camera.title}</Text>
 
                     <WebView
                         style={styles.webView}
@@ -48,9 +104,8 @@ function CameraScreen({ route }) {
                         onLoadEnd={() => setLoading(false)}
                         onError={handleOnError}
                         onHttpError={handleOnError}
-                        setBuiltInZoomControls={false}
-                        scrollEnabled={false}
-                        allowsFullscreenVideo={true}
+                        nestedScrollEnabled
+                        allowsFullscreenVideo
                         injectedJavaScript={
                             `(function() {
                                 const aElements = Array.from(document.querySelectorAll('a[target]'));
@@ -72,55 +127,76 @@ function CameraScreen({ route }) {
                                         styles.button,
                                         selectedStream.type === stream.type ? { backgroundColor: "rgba(173, 216, 230, 0.3)", borderColor: "lightblue" } : {}
                                     ]}
-                                    titleStyle={styles.buttonTitle}
+                                    titleStyle={[styles.whiteColor, styles.streamTypesButtonTitle]}
                                     onPress={() => setSelectedStream(stream)}
                                 />
                             ))
                         }
                     </View>
 
-                    <View style={styles.infoContainer}>
+                    <View style={styles.informationsContainer}>
+                        <Text style={[styles.whiteColor, styles.informationTitle]}>Information</Text>
 
-                        <Text style={[
-                            styles.whiteColor,
-                            styles.infoTitle
-                        ]}>
-                            Info
-                        </Text>
+                        <View style={styles.horizontalSeparator} />
 
-                        <View style={styles.horizontalSeparator}/>
+                        {
+                            informationsToDisplay.map(info => (
+                                <View style={styles.informationRow} key={`${info.category}${info.field}`}>
+                                    <Text style={styles.whiteColor}>{info.displayName} :</Text>
+                                    <Text style={[styles.whiteColor, styles.informationValueColumn]}>{camera?.[info.category]?.[info.field] || "Unknown"}</Text>
+                                </View>
+                            ))
+                        }
 
-                        <Text style={styles.whiteColor}>City: {camera?.location?.city || "Unknown"}</Text>
-                        <Text style={styles.whiteColor}>Region: {camera?.location?.region || "Unknown"}</Text>
-                        <Text style={styles.whiteColor}>Country: {camera?.location?.country || "Unknown"}</Text>
-                        <Text style={styles.whiteColor}>Continent: {camera?.location?.continent || "Unknown"}</Text>
-                        <Text style={styles.whiteColor}>Timezone: {camera?.location?.timezone || "Unknown"}</Text>
-                        <Text style={styles.whiteColor}>Number of views: {camera?.statistics?.views || "Unknown"}</Text>
+                        <View style={styles.actionButtonsContainer}>
+                            <Button
+                                title='Add to My cameras'
+                                icon={{
+                                    name: "add",
+                                    type: "ionicon",
+                                    size: 18,
+                                    color: "white"
+                                }}
+                                buttonStyle={styles.button}
+                                titleStyle={styles.whiteColor}
+                                iconContainerStyle={styles.actionButtonIconContainer}
+                                onPress={() => { }}
+                            />
 
-                        <Button
-                            title='Save'
-                            buttonStyle={styles.button}
-                            titleStyle={styles.buttonTitle}
-                            onPress={() => {}}
-                        />
+                            <Button
+                                title='Share'
+                                icon={{
+                                    name: Platform.OS === "ios" ? "share-outline" : "share-social",
+                                    type: "ionicon",
+                                    size: 18,
+                                    color: "white"
+                                }}
+                                buttonStyle={[styles.button, { marginTop: 15 }]}
+                                titleStyle={styles.whiteColor}
+                                iconContainerStyle={styles.actionButtonIconContainer}
+                                onPress={share}
+                            />
+                        </View>
+
                     </View>
+
+                    <View style={styles.bottomFillSpaceContainer} />
                 </View>
             )}
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
     },
     cameraTitle: {
-        color: "lightblue",
         fontSize: 18,
-        fontWeight:"bold",
+        fontWeight: "bold",
         textAlign: "center",
-        marginTop: Platform.OS === "ios" ? 15 : 0,
+        marginTop: 10,
     },
     whiteColor: {
         color: "white",
@@ -129,7 +205,7 @@ const styles = StyleSheet.create({
         flex: 0,
         height: 200,
         marginTop: 5,
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
     },
     errorContainer: {
         flexDirection: "row",
@@ -142,31 +218,48 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center",
     },
+    streamTypesButtonTitle: {
+        textTransform: "capitalize",
+    },
     buttonContainer: {
         marginHorizontal: 5,
     },
     button: {
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
         borderColor: "dimgray",
         borderWidth: 1,
         borderRadius: 10,
     },
-    buttonTitle: {
-        color: "lightgray",
-        textTransform: 'capitalize',
-    },
-    infoContainer: {
+    informationsContainer: {
+        marginTop: 30,
         marginHorizontal: 20,
     },
-    infoTitle: {
-        marginTop: 20,
+    informationTitle: {
         marginBottom: 5,
+        fontWeight: "bold",
     },
     horizontalSeparator: {
         borderBottomColor: "dimgray",
         borderBottomWidth: StyleSheet.hairlineWidth,
+        marginBottom: 10,
+    },
+    informationRow: {
+        marginVertical: 2.5,
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    informationValueColumn: {
+        width: "50%",
+    },
+    actionButtonsContainer: {
+        marginTop: 30,
+    },
+    actionButtonIconContainer: {
+        marginRight: 5,
+    },
+    bottomFillSpaceContainer: {
+        height: 20,
     },
 });
-
 
 export default CameraScreen;

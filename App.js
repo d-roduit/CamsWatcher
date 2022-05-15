@@ -76,13 +76,13 @@ function App() {
 
 const styles = StyleSheet.create({
     headerStyle: {
-        backgroundColor: 'black',
+        backgroundColor: '#203040',
     },
     headerTitleStyle: {
         fontWeight: 'bold',
     },
     tabBarStyle: {
-        backgroundColor: 'black',
+        backgroundColor: '#203040',
         borderTopWidth: 0,
     }
 });

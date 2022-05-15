@@ -330,7 +330,7 @@ function MapScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
     },
     mapview: {
         flex: 1,
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 15,
         alignItems: "center",
-        shadowColor: "black",
+        shadowColor: "#19232D",
         shadowOffset: {
             width: 0,
             height: 2,

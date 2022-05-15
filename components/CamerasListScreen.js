@@ -104,10 +104,10 @@ function CamerasListScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
     },
     listItem: {
-        backgroundColor: "black",
+        backgroundColor: "#19232D",
     },
     title: {
         color: "white",

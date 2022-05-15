@@ -11,7 +11,7 @@ function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "lightblue"
+        backgroundColor: "#19232D"
     },
 });
 
