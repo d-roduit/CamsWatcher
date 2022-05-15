@@ -3,6 +3,9 @@ import { StyleSheet, Text, View, ActivityIndicator, ScrollView, Platform, Share 
 import { Button } from '@rneui/themed';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
+import DataSection from './DataSection';
+import MapView, { Marker } from 'react-native-maps';
+import DarkMapStyle from '../DarkMapStyle';
 
 function CameraScreen({ route }) {
 
@@ -94,7 +97,9 @@ function CameraScreen({ route }) {
                 </View>
             )}
             {!loadingError && (
-                <View style={{ display: (!loading && !loadingError) ? "flex" : "none" }}>
+                <View
+                    style={{ display: (!loading && !loadingError) ? "flex" : "none" }}
+                >
                     <Text style={[styles.whiteColor, styles.cameraTitle]}>{camera.title}</Text>
 
                     <WebView
@@ -134,50 +139,73 @@ function CameraScreen({ route }) {
                         }
                     </View>
 
-                    <View style={styles.informationsContainer}>
-                        <Text style={[styles.whiteColor, styles.informationTitle]}>Information</Text>
+                    <View style={styles.narrowContainer}>
+                        <DataSection title={"Information"}>
+                            {
+                                informationsToDisplay.map(info => (
+                                    <View style={styles.informationRow} key={`${info.category}${info.field}`}>
+                                        <Text style={styles.whiteColor}>{info.displayName} :</Text>
+                                        <Text style={[styles.whiteColor, styles.informationValueColumn]}>{camera?.[info.category]?.[info.field] || "Unknown"}</Text>
+                                    </View>
+                                ))
+                            }
+                        </DataSection>
 
-                        <View style={styles.horizontalSeparator} />
-
-                        {
-                            informationsToDisplay.map(info => (
-                                <View style={styles.informationRow} key={`${info.category}${info.field}`}>
-                                    <Text style={styles.whiteColor}>{info.displayName} :</Text>
-                                    <Text style={[styles.whiteColor, styles.informationValueColumn]}>{camera?.[info.category]?.[info.field] || "Unknown"}</Text>
-                                </View>
-                            ))
+                        {!loading && !loadingError &&
+                            <DataSection title={"Location"} containerStyle={{ marginTop: 30 }}>
+                                <MapView
+                                    style={styles.mapview}
+                                    userInterfaceStyle={"dark"}
+                                    customMapStyle={DarkMapStyle}
+                                    toolbarEnabled={false}
+                                    mapType={"standard"}
+                                    initialRegion={{
+                                        latitude: camera.location.latitude,
+                                        latitudeDelta: 0.0322,
+                                        longitude: camera.location.longitude,
+                                        longitudeDelta: 0.0221,
+                                    }}
+                                >
+                                    <Marker
+                                        coordinate={{
+                                            latitude: camera.location.latitude,
+                                            longitude: camera.location.longitude
+                                        }}
+                                        title={camera.title}
+                                    />
+                                </MapView>
+                            </DataSection>
                         }
+                    </View>
 
-                        <View style={styles.actionButtonsContainer}>
-                            <Button
-                                title='Add to My cameras'
-                                icon={{
-                                    name: "add",
-                                    type: "ionicon",
-                                    size: 18,
-                                    color: "white"
-                                }}
-                                buttonStyle={styles.button}
-                                titleStyle={styles.whiteColor}
-                                iconContainerStyle={styles.actionButtonIconContainer}
-                                onPress={() => { }}
-                            />
+                    <View style={styles.actionButtonsContainer}>
+                        <Button
+                            title='Add to My cameras'
+                            icon={{
+                                name: "add",
+                                type: "ionicon",
+                                size: 18,
+                                color: "white"
+                            }}
+                            buttonStyle={styles.button}
+                            titleStyle={styles.whiteColor}
+                            iconContainerStyle={styles.actionButtonIconContainer}
+                            onPress={() => { }}
+                        />
 
-                            <Button
-                                title='Share'
-                                icon={{
-                                    name: Platform.OS === "ios" ? "share-outline" : "share-social",
-                                    type: "ionicon",
-                                    size: 18,
-                                    color: "white"
-                                }}
-                                buttonStyle={[styles.button, { marginTop: 15 }]}
-                                titleStyle={styles.whiteColor}
-                                iconContainerStyle={styles.actionButtonIconContainer}
-                                onPress={share}
-                            />
-                        </View>
-
+                        <Button
+                            title='Share'
+                            icon={{
+                                name: Platform.OS === "ios" ? "share-outline" : "share-social",
+                                type: "ionicon",
+                                size: 18,
+                                color: "white"
+                            }}
+                            buttonStyle={[styles.button, { marginTop: 15 }]}
+                            titleStyle={styles.whiteColor}
+                            iconContainerStyle={styles.actionButtonIconContainer}
+                            onPress={share}
+                        />
                     </View>
 
                     <View style={styles.bottomFillSpaceContainer} />
@@ -230,18 +258,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 10,
     },
-    informationsContainer: {
+    narrowContainer: {
+        flex: 1,
         marginTop: 30,
         marginHorizontal: 20,
-    },
-    informationTitle: {
-        marginBottom: 5,
-        fontWeight: "bold",
-    },
-    horizontalSeparator: {
-        borderBottomColor: "dimgray",
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        marginBottom: 10,
     },
     informationRow: {
         marginVertical: 2.5,
@@ -251,8 +271,13 @@ const styles = StyleSheet.create({
     informationValueColumn: {
         width: "50%",
     },
+    mapview: {
+        height: 150,
+        width: "100%",
+    },
     actionButtonsContainer: {
         marginTop: 30,
+        marginHorizontal: 20,
     },
     actionButtonIconContainer: {
         marginRight: 5,

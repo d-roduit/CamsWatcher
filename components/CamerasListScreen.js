@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, FlatList, ActivityIndicator } from 'react-native';
 import { ListItem, Avatar, Divider } from '@rneui/themed';
+import * as FormatHelper from '../FormatHelper';
 import { API_BASE_URL, API_KEY } from '@env';
 
 const fetchCamerasParams = {
@@ -23,12 +24,7 @@ function CamerasListScreen({ navigation }) {
                 setNbTotalCameras(data.result.total);
                 setCameras(previousState => [
                     ...previousState,
-                    ...data.result.webcams.map(webcam => {
-                        if (webcam.title.length > webcam.location.city.length) {
-                            webcam.title = webcam.title.substring(webcam.location.city.length + 2).trim();
-                        }
-                        return webcam;
-                    })
+                    ...data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {})
                 ]);
                 setLoading(false);
             })
