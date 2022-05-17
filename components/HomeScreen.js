@@ -95,12 +95,12 @@ function HomeScreen({ route, navigation }) {
 
     const renderItemSeparatorComponent = () => <Divider inset color={"dimgray"} />
 
-    const renderFooterComponent = () => {
+    const renderHeaderComponent = () => {
         if (!loading) return null;
 
         return (
             <View style={styles.footerContainer}>
-                <ActivityIndicator animating size="large" />
+                <ActivityIndicator animating />
             </View>
         );
     };
@@ -162,7 +162,7 @@ function HomeScreen({ route, navigation }) {
                         renderItem={renderListItemComponent}
                         ItemSeparatorComponent={renderItemSeparatorComponent}
                         indicatorStyle={"white"}
-                        ListFooterComponent={renderFooterComponent}
+                        ListHeaderComponent={renderHeaderComponent}
                     />
                 )
             }

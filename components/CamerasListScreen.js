@@ -73,7 +73,7 @@ function CamerasListScreen({ navigation }) {
 
         return (
             <View style={styles.footerContainer}>
-                <ActivityIndicator animating size="large" />
+                <ActivityIndicator animating />
             </View>
         );
     };

@@ -76,15 +76,15 @@ function App() {
 
 const styles = StyleSheet.create({
     headerStyle: {
-        backgroundColor: '#203040',
+        backgroundColor: "#203040",
     },
     headerTitleStyle: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     tabBarStyle: {
-        backgroundColor: '#203040',
+        backgroundColor: "#203040",
         borderTopWidth: 0,
-    }
+    },
 });
 
 export default App;

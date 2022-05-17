@@ -10,7 +10,7 @@ function StackNavigator({ routeName, component }) {
             initialRouteName={routeName}
             screenOptions={{
                 headerStyle: styles.headerStyle,
-                headerTintColor: 'white',
+                headerTintColor: "white",
                 headerTitleStyle: styles.headerTitleStyle,
                 animation: "slide_from_right",
             }}
@@ -23,15 +23,15 @@ function StackNavigator({ routeName, component }) {
 
 const styles = StyleSheet.create({
     headerStyle: {
-        backgroundColor: '#203040',
+        backgroundColor: "#203040",
     },
     headerTitleStyle: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     tabBarStyle: {
-        backgroundColor: '#203040',
+        backgroundColor: "#203040",
         borderTopWidth: 0,
-    }
+    },
 });
 
 export default StackNavigator;
