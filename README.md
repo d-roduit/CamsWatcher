@@ -10,10 +10,13 @@
 
 <div align="center">
     <a href="https://github.com/d-roduit/CamsWatcher">
-        <img src="demo_screenshots/customers.png" align="center" width="80%" alt="CamsWatcher homescreen page screenshot">
+        <img src="demo_screenshots/camera.jpg" align="center" width="80%" alt="CamsWatcher cameras page screenshot">
        <br/>
        <br/>
-        <img src="demo_screenshots/trainings.png" align="center" width="80%" alt="CamsWatcher cam page screenshot">
+        <img src="demo_screenshots/camerasList.jpg" align="center" width="80%" alt="CamsWatcher camerasList page screenshot">
+       <br/>
+       <br/>
+        <img src="demo_screenshots/map.jpeg" align="center" width="80%" alt="CamsWatcher map page screenshot">
     </a>
 </div>
 <br>
@@ -42,14 +45,27 @@ Once these four steps have been executed, you will be able to open the CamsWatch
 The app is made in JavaScript and uses the React Native framework.
 
 The front-end uses :
+- React Native Elements
+- React Native Maps
+- React Native Webview
 
 The back-end uses :
+- Expo
+- React Navigation
+- React Native Async Storage
+- React Native Dotenv
 
 ## <a name="guides-and-resources"></a>Guides and resources
+* [Node.js](https://nodejs.org/en/) - Server runtime
 * [React](https://fr.reactjs.org/) - JavaScript library for building user interfaces
 * [React Native](https://reactnative.dev/) - JavaScript framework for building native, cross-platform mobile apps
+* [React Native Elements](https://reactnativeelements.com/) - Cross Platform React Native UI toolkit
+* [React Native Maps](https://github.com/react-native-maps/react-native-maps) - React Native Mapview component for iOS + Android
+* [React Native Webview](https://github.com/react-native-webview/react-native-webview) - React Native Cross-Platform WebView
 * [Expo](https://expo.dev/) - Platform for making universal native apps for Android, iOS, and the web with JavaScript and React
-* [Node.js](https://nodejs.org/en/) - Server runtime
+* [React Navigation](https://reactnavigation.org/) - Routing and navigation for Expo and React Native apps
+* [React Native Async Storage](https://react-native-async-storage.github.io/async-storage/) - An asynchronous, persistent, key-value storage system for React Native
+* [React Native Dotenv](https://github.com/goatandsheep/react-native-dotenv) - Load react native environment variables using import statements for multiple env files
 
 ## <a name="authors"></a>Authors
 
