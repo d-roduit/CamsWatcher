@@ -10,13 +10,7 @@
 
 <div align="center">
     <a href="https://github.com/d-roduit/CamsWatcher">
-        <img src="demo_screenshots/camera.jpg" align="center" width="80%" alt="CamsWatcher cameras page screenshot">
-       <br/>
-       <br/>
-        <img src="demo_screenshots/camerasList.jpg" align="center" width="80%" alt="CamsWatcher camerasList page screenshot">
-       <br/>
-       <br/>
-        <img src="demo_screenshots/map.jpeg" align="center" width="80%" alt="CamsWatcher map page screenshot">
+        <img src="demo_screenshots/screens.png" align="center" width="80%" alt="CamsWatcher screens screenshot">
     </a>
 </div>
 <br>
