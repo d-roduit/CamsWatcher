@@ -28,7 +28,7 @@ function App() {
             case "CamerasListStackNavigator":
                 iconName = focused ? 'camera' : 'camera-outline';
                 break;
-            case "Home":
+            case "HomeStackNavigator":
                 iconName = focused ? 'home' : 'home-outline';
                 break;
             default:
@@ -43,7 +43,7 @@ function App() {
         <NavigationContainer>
             <StatusBar barStyle="light-content" />
             <Tab.Navigator
-                initialRouteName="Home"
+                initialRouteName="HomeStackNavigator"
                 screenOptions={({ route }) => ({
                     headerStyle: styles.headerStyle,
                     headerTintColor: 'white',
@@ -65,9 +65,9 @@ function App() {
                     options={{ headerShown: false, title: 'Cameras' }}
                 />
                 <Tab.Screen
-                    name="Home"
-                    component={HomeScreen}
-                    options={{ title: 'My cameras' }}
+                    name="HomeStackNavigator"
+                    children={() => <StackNavigator routeName={"My cameras"} component={HomeScreen} />}
+                    options={{ headerShown: false, title: 'My cameras' }}
                 />
             </Tab.Navigator>
         </NavigationContainer>

@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, ScrollView, Platform, Share } from 'react-native';
+import { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, ActivityIndicator, ScrollView, Platform, Share, InteractionManager } from 'react-native';
 import { Button } from '@rneui/themed';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import DataSection from './DataSection';
 import MapView, { Marker } from 'react-native-maps';
 import DarkMapStyle from '../DarkMapStyle';
@@ -55,7 +57,7 @@ function CameraScreen({ route }) {
         }
     }
 
-
+    const [isInMyCameras, setIsInMyCameras] = useState(false);
     const [loading, setLoading] = useState(true);
     const [loadingError, setLoadingError] = useState(false);
     const [selectedStream, setSelectedStream] = useState(availableStreams[0] || {});
@@ -63,6 +65,42 @@ function CameraScreen({ route }) {
     const handleOnError = () => {
         setLoadingError(true);
         setLoading(false);
+    }
+
+    const fetchMyCamerasIds = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('myCamerasIds');
+            return (jsonValue === null) ? new Set() : new Set(JSON.parse(jsonValue));
+        } catch (err) {
+            console.error(err);
+            return new Set();
+        }
+    }
+
+    const addToMyCameras = async () => {
+        try {
+            const myCamerasIds = await fetchMyCamerasIds();
+            // The camera added last must be displayed first in the cameras list (LIFO = Last In, First Out)
+            const myCamerasIdsLIFOSorted = new Set([camera.id, ...myCamerasIds]);
+            myCamerasIds.add();
+            const jsonValue = JSON.stringify([...myCamerasIdsLIFOSorted]);
+            await AsyncStorage.setItem('myCamerasIds', jsonValue);
+            setIsInMyCameras(true);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const removeFromMyCameras = async () => {
+        try {
+            const myCamerasIds = await fetchMyCamerasIds();
+            myCamerasIds.delete(camera.id);
+            const jsonValue = JSON.stringify([...myCamerasIds]);
+            await AsyncStorage.setItem('myCamerasIds', jsonValue);
+            setIsInMyCameras(false);
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     const share = () => {
@@ -82,6 +120,21 @@ function CameraScreen({ route }) {
         Share.share(content, options)
             .catch(err => console.error(err));
     }
+
+    useFocusEffect(
+        useCallback(() => {
+            const task = InteractionManager.runAfterInteractions(() => {
+                const updateIsInMyCamerasState = async () => {
+                    const myCamerasIds = await fetchMyCamerasIds();
+                    setIsInMyCameras(myCamerasIds.has(camera.id));
+                };
+
+                updateIsInMyCamerasState();
+            });
+
+            return () => task.cancel();
+        }, [])
+    );
 
     return (
         <ScrollView
@@ -179,19 +232,38 @@ function CameraScreen({ route }) {
                     </View>
 
                     <View style={styles.actionButtonsContainer}>
-                        <Button
-                            title='Add to My cameras'
-                            icon={{
-                                name: "add",
-                                type: "ionicon",
-                                size: 18,
-                                color: "white"
-                            }}
-                            buttonStyle={styles.button}
-                            titleStyle={styles.whiteColor}
-                            iconContainerStyle={styles.actionButtonIconContainer}
-                            onPress={() => { }}
-                        />
+
+                        {
+                            !isInMyCameras && <Button
+                                title='Add to My cameras'
+                                icon={{
+                                    name: "add",
+                                    type: "ionicon",
+                                    size: 18,
+                                    color: "white"
+                                }}
+                                buttonStyle={styles.button}
+                                titleStyle={styles.whiteColor}
+                                iconContainerStyle={styles.actionButtonIconContainer}
+                                onPress={addToMyCameras}
+                            />
+                        }
+
+                        {
+                            isInMyCameras && <Button
+                                title='Remove from My cameras'
+                                icon={{
+                                    name: "remove",
+                                    type: "ionicon",
+                                    size: 18,
+                                    color: "white"
+                                }}
+                                buttonStyle={styles.button}
+                                titleStyle={styles.whiteColor}
+                                iconContainerStyle={styles.actionButtonIconContainer}
+                                onPress={removeFromMyCameras}
+                            />
+                        }
 
                         <Button
                             title='Share'
@@ -225,6 +297,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
         marginTop: 10,
+        marginHorizontal: 20,
     },
     whiteColor: {
         color: "white",
