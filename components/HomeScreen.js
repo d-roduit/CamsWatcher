@@ -26,7 +26,13 @@ function HomeScreen({ route, navigation }) {
     const fetchCameras = () => {
         if (myCamerasIds.size <= 0) return;
         setLoading(true);
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/webcam=${[...myCamerasIds].join(",")}/limit=50?show=webcams:image,location,player,statistics`;
+        const webcamDataToFetch = [
+            "image",
+            "location",
+            "player",
+            "statistics",
+        ];
+        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/webcam=${[...myCamerasIds].join(",")}/limit=50?show=webcams:${webcamDataToFetch.join(",")}`;
         fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type" : "application/json" } })
             .then(response => response.json())
             .then(data => {
