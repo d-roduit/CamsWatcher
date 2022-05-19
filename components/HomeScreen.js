@@ -23,7 +23,7 @@ function HomeScreen({ route, navigation }) {
         }
     }
 
-    const fetchCameras = () => {
+    const fetchCameras = async () => {
         if (myCamerasIds.size <= 0) return;
         setLoading(true);
         const webcamDataToFetch = [
@@ -32,14 +32,36 @@ function HomeScreen({ route, navigation }) {
             "player",
             "statistics",
         ];
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/webcam=${[...myCamerasIds].join(",")}/limit=50?show=webcams:${webcamDataToFetch.join(",")}`;
-        fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type" : "application/json" } })
-            .then(response => response.json())
-            .then(data => {
-                setCameras(data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
-                setLoading(false);
-            })
-            .catch(err => console.error(err));
+
+        const nbMaxCamerasAllowedByAPIToFetchPerRequest = 25;
+
+        const myCamerasIdsAsArray = [...myCamerasIds];
+        const myCamerasIdsGroupedForFetching = [];
+        while (myCamerasIdsAsArray.length > 0) {
+            myCamerasIdsGroupedForFetching.push(myCamerasIdsAsArray.splice(0, nbMaxCamerasAllowedByAPIToFetchPerRequest));
+        }
+
+        try {
+            const fetchRequests = [];
+
+            for (const myCamerasIdsGroup of myCamerasIdsGroupedForFetching) {
+                const getCamerasAPIEndpoint = `${API_BASE_URL}/list/webcam=${myCamerasIdsGroup.join(",")}/limit=${nbMaxCamerasAllowedByAPIToFetchPerRequest}?show=webcams:${webcamDataToFetch.join(",")}`;
+                fetchRequests.push(
+                    fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type": "application/json" } })
+                );
+            }
+
+            const responses = await Promise.all(fetchRequests);
+            const parseJSONResponsesPromises = responses.map(response => response.json());
+            const arrayOfData = await Promise.all(parseJSONResponsesPromises);
+
+            const webcams = arrayOfData.flatMap(data => data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
+
+            setCameras(webcams);
+            setLoading(false);
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     const removeFromMyCameras = async (cameraId) => {
