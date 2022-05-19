@@ -171,7 +171,8 @@ function MapScreen({ navigation }) {
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Fetching your location <ActivityIndicator /></Text>
+                        <Text style={styles.modalText}>Fetching your location</Text>
+                        <ActivityIndicator />
                     </View>
                 </View>
             </Modal>
@@ -194,10 +195,12 @@ const styles = StyleSheet.create({
         marginTop: 22,
     },
     modalView: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         borderRadius: 10,
         padding: 15,
-        alignItems: "center",
         shadowColor: "#19232D",
         shadowOffset: {
             width: 0,
@@ -208,6 +211,7 @@ const styles = StyleSheet.create({
     },
     modalText: {
         color: "white",
+        marginRight: 10,
     },
     calloutContainer: {
         flexDirection: "column",
