@@ -4,13 +4,13 @@
 </h1>
 
 <p align="center">
-    <strong>CamsWatcher is a React Native application for real-time observation of webcams around the world</strong>
+    <strong>CamsWatcher is a React Native application for real-time observation of webcams around the world 📸🌍</strong>
 </p>
 </div>
 
 <div align="center">
     <a href="https://github.com/d-roduit/CamsWatcher">
-        <img src="demo_screenshots/screens.png" align="center" width="80%" alt="CamsWatcher screens screenshot">
+        <img src="readme_pictures/screens.png" align="center" width="80%" alt="CamsWatcher screens screenshot">
     </a>
 </div>
 <br>
