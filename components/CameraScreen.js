@@ -9,38 +9,30 @@ import DataSection from './DataSection';
 import MapView, { Marker } from 'react-native-maps';
 import DarkMapStyle from '../DarkMapStyle';
 
+const getFieldInObject = (object, field) => field.split('.').reduce((accumulator, current) => accumulator[current], object);
+
 function CameraScreen({ route }) {
 
     const { camera } = route.params;
     const informationsToDisplay = [
         {
-            category: "location",
-            field: "city",
+            field: "location.city",
             displayName: "City",
         },
         {
-            category: "location",
-            field: "region",
+            field: "location.region",
             displayName: "Region",
         },
         {
-            category: "location",
-            field: "country",
+            field: "location.country",
             displayName: "Country",
         },
         {
-            category: "location",
-            field: "continent",
+            field: "location.continent",
             displayName: "Continent",
         },
         {
-            category: "location",
-            field: "timezone",
-            displayName: "Timezone",
-        },
-        {
-            category: "statistics",
-            field: "views",
+            field: "viewCount",
             displayName: "Views",
         },
     ];
@@ -48,13 +40,11 @@ function CameraScreen({ route }) {
 
     // Fill availableStreams
     for (const streamType in camera?.player) {
-        if (camera?.player?.[streamType]?.available) {
-            availableStreams.push({
-                type: streamType,
-                windyURL: camera?.player?.[streamType]?.link || `https://www.windy.com/webcams/${camera.id}`,
-                embedURL: camera?.player?.[streamType]?.embed || "https://error"
-            });
-        }
+        availableStreams.push({
+            type: streamType,
+            windyURL: `https://www.windy.com/webcams/${camera.webcamId}`,
+            embedURL: camera?.player?.[streamType],
+        });
     }
 
     const [isInMyCameras, setIsInMyCameras] = useState(false);
@@ -81,7 +71,7 @@ function CameraScreen({ route }) {
         try {
             const myCamerasIds = await fetchMyCamerasIds();
             // The camera added last must be displayed first in the cameras list (LIFO = Last In, First Out)
-            const myCamerasIdsLIFOSorted = new Set([camera.id, ...myCamerasIds]);
+            const myCamerasIdsLIFOSorted = new Set([camera.webcamId, ...myCamerasIds]);
             myCamerasIds.add();
             const jsonValue = JSON.stringify([...myCamerasIdsLIFOSorted]);
             await AsyncStorage.setItem('myCamerasIds', jsonValue);
@@ -94,7 +84,7 @@ function CameraScreen({ route }) {
     const removeFromMyCameras = async () => {
         try {
             const myCamerasIds = await fetchMyCamerasIds();
-            myCamerasIds.delete(camera.id);
+            myCamerasIds.delete(camera.webcamId);
             const jsonValue = JSON.stringify([...myCamerasIds]);
             await AsyncStorage.setItem('myCamerasIds', jsonValue);
             setIsInMyCameras(false);
@@ -126,7 +116,7 @@ function CameraScreen({ route }) {
             const task = InteractionManager.runAfterInteractions(() => {
                 const updateIsInMyCamerasState = async () => {
                     const myCamerasIds = await fetchMyCamerasIds();
-                    setIsInMyCameras(myCamerasIds.has(camera.id));
+                    setIsInMyCameras(myCamerasIds.has(camera.webcamId));
                 };
 
                 updateIsInMyCamerasState();
@@ -198,7 +188,7 @@ function CameraScreen({ route }) {
                                 informationsToDisplay.map(info => (
                                     <View style={styles.informationRow} key={`${info.category}${info.field}`}>
                                         <Text style={styles.whiteColor}>{info.displayName} :</Text>
-                                        <Text style={[styles.whiteColor, styles.informationValueColumn]}>{camera?.[info.category]?.[info.field] || "Unknown"}</Text>
+                                        <Text style={[styles.whiteColor, styles.informationValueColumn]}>{getFieldInObject(camera, info.field) || "Unknown"}</Text>
                                     </View>
                                 ))
                             }

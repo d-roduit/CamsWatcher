@@ -15,33 +15,42 @@ function CamerasListScreen({ navigation }) {
     const [nbTotalCameras, setNbTotalCameras] = useState(-1);
     const [cameras, setCameras] = useState([]);
 
-    const fetchCameras = () => {
+    const fetchCameras = async () => {
         setLoading(true);
-        const webcamDataToFetch = [
-            "image",
-            "location",
-            "player",
-            "statistics",
-        ];
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/list/orderby=random/limit=${fetchCamerasParams.limit},${fetchCamerasParams.offset}?show=webcams:${webcamDataToFetch.join(",")}`;
-        fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type" : "application/json" } })
-            .then(response => response.json())
-            .then(data => {
-                setNbTotalCameras(data.result.total);
-                setCameras(previousState => [
-                    ...previousState,
-                    ...data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {})
-                ]);
-                setLoading(false);
-            })
-            .catch(err => console.error(err));
-    }
 
-    const handleOnEndReached = () => {
+        try {
+            const webcamDataToFetch = [
+                "images",
+                "location",
+                "player",
+            ];
+            const getCamerasAPIEndpoint = `${API_BASE_URL}/webcams?limit=${fetchCamerasParams.limit}&offset=${fetchCamerasParams.offset}&include=${webcamDataToFetch.join(",")}`;
+
+            const response = await fetch(getCamerasAPIEndpoint, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-windy-api-key": API_KEY,
+                }
+            });
+            const data = await response.json();
+
+            setNbTotalCameras(data.total);
+            setCameras(previousState => [
+                ...previousState,
+                ...data.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {})
+            ]);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOnEndReached = async () => {
         const newOffset = fetchCamerasParams.offset + fetchCamerasParams.limit;
         if (newOffset > nbTotalCameras - fetchCamerasParams.limit) return;
         fetchCamerasParams.offset = newOffset;
-        fetchCameras();
+        await fetchCameras();
     }
 
     const renderListItemComponent = ({ item }) => {
@@ -52,8 +61,8 @@ function CamerasListScreen({ navigation }) {
             >
                 <Avatar
                     icon={{ name: "camera", type: "ionicon", color: "gray" }}
-                    size={item.image.sizes.icon.width}
-                    source={{ uri: item.image.current.icon }}
+                    size={item.images.sizes.icon.width}
+                    source={{ uri: item.images.current.icon }}
                     avatarStyle={styles.avatar}
                 />
 
@@ -84,7 +93,9 @@ function CamerasListScreen({ navigation }) {
         );
     };
 
-    useEffect(() => fetchCameras(), []);
+    useEffect(() => {
+        fetchCameras();
+    }, []);
 
     return (
         <View style={styles.container}>

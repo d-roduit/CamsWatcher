@@ -27,10 +27,9 @@ function HomeScreen({ route, navigation }) {
         if (myCamerasIds.size <= 0) return;
         setLoading(true);
         const webcamDataToFetch = [
-            "image",
+            "images",
             "location",
             "player",
-            "statistics",
         ];
 
         const nbMaxCamerasAllowedByAPIToFetchPerRequest = 25;
@@ -45,9 +44,9 @@ function HomeScreen({ route, navigation }) {
             const fetchRequests = [];
 
             for (const myCamerasIdsGroup of myCamerasIdsGroupedForFetching) {
-                const getCamerasAPIEndpoint = `${API_BASE_URL}/list/webcam=${myCamerasIdsGroup.join(",")}/limit=${nbMaxCamerasAllowedByAPIToFetchPerRequest}?show=webcams:${webcamDataToFetch.join(",")}`;
+                const getCamerasAPIEndpoint = `${API_BASE_URL}/webcams?webcamIds=${myCamerasIdsGroup.join(",")}&limit=${nbMaxCamerasAllowedByAPIToFetchPerRequest}&include=${webcamDataToFetch.join(",")}`;
                 fetchRequests.push(
-                    fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type": "application/json" } })
+                    fetch(getCamerasAPIEndpoint, { headers: { "x-windy-api-key": API_KEY, "Content-Type": "application/json" } })
                 );
             }
 
@@ -55,7 +54,7 @@ function HomeScreen({ route, navigation }) {
             const parseJSONResponsesPromises = responses.map(response => response.json());
             const arrayOfData = await Promise.all(parseJSONResponsesPromises);
 
-            const webcams = arrayOfData.flatMap(data => data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
+            const webcams = arrayOfData.flatMap(data => data.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
 
             setCameras(webcams);
             setLoading(false);
@@ -93,7 +92,7 @@ function HomeScreen({ route, navigation }) {
                         buttonStyle={{ minHeight: '100%', backgroundColor: 'firebrick' }}
                         titleStyle={styles.whiteColor}
                         onPress={() => {
-                            removeFromMyCameras(item.id);
+                            removeFromMyCameras(item.webcamId);
                             resetCallback();
                         }}
                     />
@@ -101,8 +100,8 @@ function HomeScreen({ route, navigation }) {
             >
                 <Avatar
                     icon={{ name: "camera", type: "ionicon", color: "gray" }}
-                    size={item.image.sizes.icon.width}
-                    source={{ uri: item.image.current.icon }}
+                    size={item.images.sizes.icon.width}
+                    source={{ uri: item.images.current.icon }}
                     avatarStyle={styles.avatar}
                 />
 

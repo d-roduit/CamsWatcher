@@ -26,6 +26,7 @@ function MapScreen({ navigation }) {
         setLoadingUserLocation(true);
         const userLocation = await Location.getCurrentPositionAsync({});
         if (typeof userLocation === "undefined") {
+            setLoadingUserLocation(false);
             Alert.alert('Location not found');
             return null;
         }
@@ -35,6 +36,40 @@ function MapScreen({ navigation }) {
     }
 
     const getCoordinatesForAPIFromLocation = ({ latitude, latitudeDelta, longitude, longitudeDelta }) => {
+        const zoomRangeAllowed = {
+            minZoom: 4,
+            maxZoom: 18,
+        };
+
+        let zoom = Math.round(Math.log(360 / longitudeDelta) / Math.LN2) + 1;
+
+        if (zoom < zoomRangeAllowed.minZoom) {
+            zoom = zoomRangeAllowed.minZoom;
+        } else if (zoom > zoomRangeAllowed.maxZoom) {
+            zoom = zoomRangeAllowed.maxZoom;
+        }
+
+        /**
+         * The reason for these bounding box parameters is explained in this section of the doc:
+         * https://api.windy.com/webcams/versions-transfer#webcams-map-cluster
+         */
+        const boundingBoxRangeAllowed = {
+            maxLatitudeDeltaForMinZoom: 22.5,
+            maxLongitudeDeltaForMinZoom: 45,
+            divisionFactorForSubsequentZoom: 2,
+        };
+
+        const maxLatitudeDeltaForCurrentZoom = boundingBoxRangeAllowed.maxLatitudeDeltaForMinZoom / Math.pow(boundingBoxRangeAllowed.divisionFactorForSubsequentZoom, zoom - zoomRangeAllowed.minZoom);
+        const maxLongitudeDeltaForCurrentZoom = boundingBoxRangeAllowed.maxLongitudeDeltaForMinZoom / Math.pow(boundingBoxRangeAllowed.divisionFactorForSubsequentZoom, zoom - zoomRangeAllowed.minZoom);
+
+        if (latitudeDelta > maxLatitudeDeltaForCurrentZoom) {
+            latitudeDelta = maxLatitudeDeltaForCurrentZoom;
+        }
+
+        if (longitudeDelta > maxLongitudeDeltaForCurrentZoom) {
+            longitudeDelta = maxLongitudeDeltaForCurrentZoom;
+        }
+
         return {
             topRight: {
                 latitude: latitude + (latitudeDelta / 2),
@@ -44,8 +79,8 @@ function MapScreen({ navigation }) {
                 latitude: latitude - (latitudeDelta / 2),
                 longitude: longitude - (longitudeDelta / 2)
             },
-            zoom: Math.round(Math.log(360 / longitudeDelta) / Math.LN2) + 2.5
-        }
+            zoom,
+        };
     }
 
     const determineInitialAreaToDisplay = async () => {
@@ -70,28 +105,37 @@ function MapScreen({ navigation }) {
         return areaToDisplay;
     }
 
-    const fetchCamerasInArea = ({ topRight, bottomLeft, zoom }) => {
+    const fetchCamerasInArea = async ({ topRight, bottomLeft, zoom }) => {
         const webcamDataToFetch = [
-            "image",
+            "images",
             "location",
             "player",
-            "statistics",
         ];
-        const getCamerasAPIEndpoint = `${API_BASE_URL}/map/${topRight.latitude},${topRight.longitude},${bottomLeft.latitude},${bottomLeft.longitude},${zoom}?show=webcams:${webcamDataToFetch.join(",")}`;
-        fetch(getCamerasAPIEndpoint, { headers: { "x-windy-key": API_KEY, "Content-Type" : "application/json" } })
-            .then(response => (response.ok) ? response.json() : null)
-            .then(data => {
-                if (typeof data?.result?.webcams === "undefined") {
-                    setCameras([]);
-                    return;
+
+        const getCamerasAPIEndpoint = `${API_BASE_URL}/map/clusters?northLat=${topRight.latitude}&southLat=${bottomLeft.latitude}&eastLon=${topRight.longitude}&westLon=${bottomLeft.longitude}&zoom=${zoom}&include=${webcamDataToFetch.join(",")}`;
+
+        try {
+            const response = await fetch(getCamerasAPIEndpoint, {
+                headers: {
+                    "Content-Type" : "application/json",
+                    "x-windy-api-key": API_KEY,
                 }
-                setCameras(data.result.webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
-            })
-            .catch(err => console.error(err));
+            });
+
+            const webcams = response.ok ? await response.json() : null;
+
+            if (!webcams) {
+                setCameras([]);
+            } else {
+                setCameras(webcams.map(webcam => FormatHelper.removeCityFromTitle(webcam) || {}));
+            }
+        } catch (err) {
+            console.error(err);
+        }
     }
 
-    const handleOnRegionChangeComplete = region => {
-        fetchCamerasInArea(getCoordinatesForAPIFromLocation(region))
+    const handleOnRegionChangeComplete = async region => {
+        await fetchCamerasInArea(getCoordinatesForAPIFromLocation(region))
     };
 
     const renderCameraMarker = (camera, index) => {
@@ -102,7 +146,7 @@ function MapScreen({ navigation }) {
                     latitude: camera.location.latitude,
                     longitude: camera.location.longitude
                 }}
-                image={{ uri: camera.image.current.icon }}
+                image={{ uri: camera.images.current.icon }}
             >
                 <Callout
                     tooltip
@@ -137,7 +181,7 @@ function MapScreen({ navigation }) {
     useEffect(() => {
         (async () => {
             const baseArea = await determineInitialAreaToDisplay();
-            fetchCamerasInArea(baseArea);
+            await fetchCamerasInArea(baseArea);
         })();
     }, []);
 
